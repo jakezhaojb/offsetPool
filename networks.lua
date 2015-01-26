@@ -143,12 +143,3 @@ phase_net2 = function(inputSize,pool1,pool2,phase_const,mag_const)
     return net 
 
 end
-
-
-
-
-
-
-
-
-

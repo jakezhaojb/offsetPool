@@ -4,14 +4,30 @@ if math.mod == nil then
 end
 
 require('image')
-dofile('jitter_utils.lua')
+dofile('../jitter_utils.lua')
 
-im = image.load('test_image.png')
-im = image.scale(im,200,200)
-im = image.rgb2y(im:narrow(1,1,3)) 
-im = padImage(im, {1, 1, 1, 1}, 0)  -- image, pad_lrtb, bordervalue
-w = im:size(3)
-h = im:size(2)
+im1 = image.load('test1.png')
+im2 = image.load('test2.png')
+im1 = image.scale(im1,32,32)
+im1 = padImage(im1, {1, 1, 1, 1}, 0)  -- image, pad_lrtb, bordervalue
+w = im1:size(3)
+h = im1:size(2)
+im2 = image.scale(im2,32,32)
+im2 = padImage(im2, {1, 1, 1, 1}, 0)  -- image, pad_lrtb, bordervalue
+w_ = im2:size(3)
+h_ = im2:size(2)
+
+assert(w == w_)
+assert(h == h_)
+
+im = im1 + im2
+for i = 1, h do
+   for j = 1, w do
+      if im[1][i][j] > 1 then
+         im[1][i][j] = 1
+      end
+   end
+end
 
 uv = torch.FloatTensor({w/2,h/2})
 --h1 = image.display{image=im[{{1,3},{},{}}], zoom = 5}
@@ -19,7 +35,7 @@ uv = torch.FloatTensor({w/2,h/2})
 -- Draw random stewies on top of each other
 out_im = im:clone():fill(0)
 --math.randomseed(0)
-num_images = 10000
+num_images = 10
 dataset = {} 
 dataset.images = torch.Tensor(num_images,1,h,w) 
 
@@ -44,7 +60,10 @@ end
 
 dataset.targets = uv:t()
 
-torch.save('./Data/toy_data/stewie_valid.t7',dataset) 
+dataset.images:add(-dataset.images:mean())
+
+--torch.save('./Data/toy_data/stewie_valid.t7',dataset) 
+torch.save('./toy.t7',dataset) 
 
 --for i = 1, num_images do
 -- print(i)  
