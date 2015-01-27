@@ -7,6 +7,7 @@ require 'optim'
 require 'nnx' 
 require 'unsup' 
 require 'data' 
+require 'gnuplot' 
 
 local hasjzt,jzt = pcall(require, "jzt")
 if not hasjzt then

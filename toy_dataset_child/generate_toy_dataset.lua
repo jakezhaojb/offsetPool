@@ -4,9 +4,9 @@ if math.mod == nil then
 end
 
 require('image')
-dofile('jitter_utils.lua')
+dofile('../jitter_utils.lua')
 
-im = image.load('test_image.png')
+im = image.load('./test_image.png')
 im = image.scale(im,200,200)
 im = image.rgb2y(im:narrow(1,1,3)) 
 im = padImage(im, {1, 1, 1, 1}, 0)  -- image, pad_lrtb, bordervalue
@@ -19,7 +19,7 @@ uv = torch.FloatTensor({w/2,h/2})
 -- Draw random stewies on top of each other
 out_im = im:clone():fill(0)
 --math.randomseed(0)
-num_images = 10000
+num_images = 3000
 dataset = {} 
 dataset.images = torch.Tensor(num_images,1,h,w) 
 

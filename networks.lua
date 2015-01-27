@@ -73,7 +73,7 @@ conv_net2 = function(inputSize)
 end
 
 --convnet with max offset pooling 
-phase_net1 = function(inputSize,pool1,phase_const,mag_const)  
+phase_net1 = function(inputSize,pool1,phase_const,mag_const,flag)  
 
     local net = nn.Sequential()
     local size = inputSize
@@ -90,19 +90,23 @@ phase_net1 = function(inputSize,pool1,phase_const,mag_const)
     pooling1 = nn.SpatialMaxPooling(pool1,pool1,pool1,pool1) 
     net:add(pooling1)
     net.pooling1 = pooling1 
-    size[1] = 3 * nOutputPlane1  -- TODO Jake.. what is 3.. There could be incorrect
+    size[1] = 1 * nOutputPlane1  -- TODO Jake.. what is 3.. There could be incorrect
     size[2] = math.floor((size[2] - pool1)/pool1 + 1) 
     size[3] = math.floor((size[3] - pool1)/pool1 + 1) 
     --Reshape for F.C. stages 
     size = size[1]*size[2]*size[3]
     net:add(nn.Reshape(size))
-    net:add(nn.Linear(size,2)) 
+    if flag == nil then
+       net:add(nn.Linear(size,2)) 
+    else
+       net:add(nn.Linear(size,4)) 
+    end
 
     return net 
 
 end
 --convnet with max offset pooling 
-phase_net2 = function(inputSize,pool1,pool2,phase_const,mag_const)  
+phase_net2 = function(inputSize,pool1,pool2,phase_const,mag_const,flag)  
 
     local net = nn.Sequential()
     local size = inputSize
@@ -138,7 +142,11 @@ phase_net2 = function(inputSize,pool1,pool2,phase_const,mag_const)
     --Reshape for F.C. stages 
     size = size[1]*size[2]*size[3]
     net:add(nn.Reshape(size))
-    net:add(nn.Linear(size,2)) 
+    if flag == nil then
+       net:add(nn.Linear(size,2)) 
+    else
+       net:add(nn.Linear(size,4)) 
+    end
 
     return net 
 

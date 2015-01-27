@@ -233,6 +233,12 @@ static int cunn_SSMPoolingOffsets_updateGradInput(lua_State *L)
 	 gridX_data, gridY_data, 
      nInputPlane, nInputRows, nInputCols, nOutputRows, nOutputCols, kH, kW);
   
+  // clean
+  //THCudaTensor_free(gradOutput);
+  //THCudaTensor_free(input);
+  //THCudaTensor_free(softmax);
+  //THCudaTensor_free(gridX);
+  //THCudaTensor_free(gridY);
 
   // check for errors
   cudaError_t err = cudaGetLastError();

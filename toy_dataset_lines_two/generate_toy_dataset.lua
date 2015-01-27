@@ -35,7 +35,7 @@ uv = torch.FloatTensor({w/2,h/2})
 -- Draw random stewies on top of each other
 out_im = im:clone():fill(0)
 --math.randomseed(0)
-num_images = 10
+num_images = 1000
 dataset = {} 
 dataset.images = torch.Tensor(num_images,1,h,w) 
 

@@ -1,16 +1,25 @@
 dofile("init.lua")
+cutorch.setDevice(1)
 
-train_sample = function(sample, net, criterion)
+train_sample = function(sample, net, criterion, w, h)
    local output = net:forward(sample.images)
    -- pixel error
    local out_pix = output:float()
    out_pix[{{},1}]:mul(w)
    out_pix[{{},2}]:mul(h)
+   if out_pix:size(2) == 4 then
+      out_pix[{{},3}]:mul(w)
+      out_pix[{{},4}]:mul(h)
+   end
    local out_target = sample.targets:float()
    out_target[{{},1}]:mul(w)
    out_target[{{},2}]:mul(h)
+   if out_target:size(2) == 4 then
+      out_target[{{},3}]:mul(w)
+      out_target[{{},4}]:mul(h)
+   end
    local pix_err = out_pix - out_target
-   pix_err = pix_err:pow(2):sum(2):sqrt()  -- mean of L2 on dim 2
+   pix_err = pix_err:pow(2):sum(2):sqrt()  -- mean of L2 on dim 1
 
    local sample_error = criterion:forward(output,sample.targets) 
    local gradOutput = criterion:backward(output,sample.targets) 
@@ -26,20 +35,35 @@ end
 dofile("init.lua")
 
 local train_data_path = "./toy_dataset_child/toy.t7"
-if paths.filep(train_data_path) then
+if not paths.filep(train_data_path) then
    local dir_path = paths.dirname(train_data_path)
-   dofile(dir_path .. "generate_toy_dataset.lua")
+   os.execute("cd " .. dir_path .. "&& ~/install/new_torch7_2014_10_24/bin/th generate_toy_dataset.lua")
 end
+
+dataset = torch.load( "./toy_dataset_child/toy.t7")
+
+dataset.images = dataset.images:cuda()
+dataset.targets = dataset.targets:cuda()
 
 bsz = 16
 learn_rate = 0.0001
 nbatches = 100  -- number of batches in an epoch
-epochs = 100 
-pool1 = 40
-pool2 = 1
+epochs = 200 
+pool1 = 40 -- TODO
+pool2 = 2
 phase_const = 0
 mag_const = 1
-net = phase_net1(im:size(),pool1,phase_const,mag_const):cuda()  --TODO
+imsz = dataset.images[1]:size() 
+width = imsz[2]
+height = imsz[3]
+if width < pool1 then
+   pool1 = math.floor(width / 5)
+end
+if dataset.targets:float():size(2) == 4 then
+   net = phase_net2(imsz,pool1,pool2,phase_const,mag_const,true):cuda()  --TODO
+else
+   net = phase_net2(imsz,pool1,pool2,phase_const,mag_const):cuda()  --TODO
+end
 --====================
 --[[
 sample = {}
@@ -62,12 +86,13 @@ for iter = 1,epochs do
     epoch_train_error = 0
     sys.tic() 
     local uv_errors = torch.FloatTensor(nbatches, bsz)
+    uv_errors:zero()
 
     for i = 1, nbatches do
         idx_batch = (i-1) * bsz + 1
         samples = {}
-        samples.targets = dataset.targets[{ {idx_batch, idx_batch+bsz}, {} }]
-        samples.images = dataset.images[{ {idx_batch, idx_batch+bsz},{},{},{} }]
+        samples.targets = dataset.targets[{ {idx_batch, idx_batch+bsz-1}, {} }]
+        samples.images = dataset.images[{ {idx_batch, idx_batch+bsz-1},{},{},{} }]
         
         if sample_train_error ~= nil then
            progress(i,nbatches,string.format('err=%.4e', sample_train_error))
@@ -76,7 +101,7 @@ for iter = 1,epochs do
         end
 
         sample_train_error, sample_train_error_pix = 
-           train_sample(samples, net, criterion)
+           train_sample(samples, net, criterion, width, height)
 
         uv_errors[{i,{}}]:copy(sample_train_error_pix)
 
@@ -91,10 +116,10 @@ for iter = 1,epochs do
     uv_errors = uv_errors:reshape(nbatches * bsz)
     
     gnuplot.hist(uv_errors, 50, 0, 100)
-    gnuplot.figprint('./Results/err_hist_iter_pool'..(pool1*pool2)..'.eps')
+    gnuplot.figprint('./Results/phase2_child_err_hist_iter_pool'..(pool1*pool2)..'.eps')
     --gnuplot.closeall()
 
     print(output) 
 end  
 
-torch.save("phase1_child.net", net)
+torch.save("./Results/phase2_child.net", net)

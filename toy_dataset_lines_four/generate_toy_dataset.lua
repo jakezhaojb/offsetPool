@@ -20,7 +20,7 @@ h_ = im2:size(2)
 assert(w == w_)
 assert(h == h_)
 
-local num_images = 10
+local num_images = 1000
 local scale = 0.5
 -- im1
 local uv = torch.FloatTensor({w/2,h/2})

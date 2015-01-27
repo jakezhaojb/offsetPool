@@ -5,6 +5,8 @@ function SSMPoolingOffsets:__init(kW, kH)
 
    self.kW = kW
    self.kH = kH
+   print(self.kW)
+   print(self.kH)
    self.gridX = torch.linspace(-1,1,kW)
    self.gridY = torch.linspace(-1,1,kH) 
 

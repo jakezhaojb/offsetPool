@@ -11,3 +11,5 @@ local hasjzt,jzt = pcall(require, "jzt")
 if not haslfs then
   print('Couldnt find jzt, continuing anyway')
 end
+
+dofile('SSMPoolingOffsets.lua')
