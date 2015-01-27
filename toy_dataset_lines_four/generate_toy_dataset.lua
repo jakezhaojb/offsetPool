@@ -8,11 +8,11 @@ dofile('../jitter_utils.lua')
 
 im1 = image.load('test1.png')
 im2 = image.load('test2.png')
-im1 = image.scale(im1,32,32)
+--im1 = image.scale(im1,32,32)
 im1 = padImage(im1, {1, 1, 1, 1}, 0)  -- image, pad_lrtb, bordervalue
 w = im1:size(3)
 h = im1:size(2)
-im2 = image.scale(im2,32,32)
+--im2 = image.scale(im2,32,32)
 im2 = padImage(im2, {1, 1, 1, 1}, 0)  -- image, pad_lrtb, bordervalue
 w_ = im2:size(3)
 h_ = im2:size(2)
@@ -20,8 +20,8 @@ h_ = im2:size(2)
 assert(w == w_)
 assert(h == h_)
 
-local num_images = 1000
-local scale = 0.5
+local num_images = 10000
+local scale = 1
 -- im1
 local uv = torch.FloatTensor({w/2,h/2})
 --h1 = image.display{image=im[{{1,3},{},{}}], zoom = 5}

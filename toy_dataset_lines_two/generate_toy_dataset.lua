@@ -8,11 +8,11 @@ dofile('../jitter_utils.lua')
 
 im1 = image.load('test1.png')
 im2 = image.load('test2.png')
-im1 = image.scale(im1,32,32)
+--im1 = image.scale(im1,32,32)
 im1 = padImage(im1, {1, 1, 1, 1}, 0)  -- image, pad_lrtb, bordervalue
 w = im1:size(3)
 h = im1:size(2)
-im2 = image.scale(im2,32,32)
+--im2 = image.scale(im2,32,32)
 im2 = padImage(im2, {1, 1, 1, 1}, 0)  -- image, pad_lrtb, bordervalue
 w_ = im2:size(3)
 h_ = im2:size(2)
@@ -35,7 +35,7 @@ uv = torch.FloatTensor({w/2,h/2})
 -- Draw random stewies on top of each other
 out_im = im:clone():fill(0)
 --math.randomseed(0)
-num_images = 1000
+num_images = 10000
 dataset = {} 
 dataset.images = torch.Tensor(num_images,1,h,w) 
 
@@ -43,7 +43,7 @@ uv = torch.FloatTensor(2, num_images)
 uv[{1,{}}]:fill(w/2)
 uv[{2,{}}]:fill(h/2)
 
-scale = 0.5
+local scale = 1
 
 for i = 1, num_images do
   
