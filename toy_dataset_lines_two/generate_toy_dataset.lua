@@ -48,6 +48,7 @@ local scale = 1
 for i = 1, num_images do
   
   deg_rot = math.random() * 360 
+  deg_rot = 0
   trans_u = (math.random() - 0.5) * w
   trans_v = (math.random() - 0.5) * h
 

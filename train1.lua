@@ -42,27 +42,25 @@ end
 
 dataset = torch.load( "./toy_dataset_child/toy.t7")
 
-dataset.images = dataset.images:cuda()
-dataset.targets = dataset.targets:cuda()
+--dataset.images = dataset.images:cuda()
+--dataset.targets = dataset.targets:cuda()
 
 bsz = 16
 learn_rate = 0.0001
 nbatches = 100  -- number of batches in an epoch
 epochs = 200 
-pool1 = 40 -- TODO
+--pool1 = 40 -- TODO
 pool2 = 2
 phase_const = 0
 mag_const = 1
 imsz = dataset.images[1]:size() 
 width = imsz[2]
 height = imsz[3]
-if width < pool1 then
-   pool1 = math.floor(width / 5)
-end
+pool1 = math.floor(width / 5)
 if dataset.targets:float():size(2) == 4 then
-   net = phase_net2(imsz,pool1,pool2,phase_const,mag_const,true):cuda()  --TODO
+   net = phase_net1(imsz,pool1,phase_const,mag_const,true):cuda()  --TODO
 else
-   net = phase_net2(imsz,pool1,pool2,phase_const,mag_const):cuda()  --TODO
+   net = phase_net1(imsz,pool1,phase_const,mag_const):cuda()  --TODO
 end
 --====================
 --[[
@@ -94,6 +92,9 @@ for iter = 1,epochs do
         samples.targets = dataset.targets[{ {idx_batch, idx_batch+bsz-1}, {} }]
         samples.images = dataset.images[{ {idx_batch, idx_batch+bsz-1},{},{},{} }]
         
+        samples.targets = samples.targets:cuda()
+        samples.images = samples.images:cuda()
+
         if sample_train_error ~= nil then
            progress(i,nbatches,string.format('err=%.4e', sample_train_error))
         else
@@ -106,6 +107,11 @@ for iter = 1,epochs do
         uv_errors[{i,{}}]:copy(sample_train_error_pix)
 
         epoch_train_error = epoch_train_error + sample_train_error 
+
+        samples.targets = nil
+        samples.images = nil
+
+        collectgarbage()
     end
     time = sys.toc() 
 
@@ -116,10 +122,10 @@ for iter = 1,epochs do
     uv_errors = uv_errors:reshape(nbatches * bsz)
     
     gnuplot.hist(uv_errors, 50, 0, 100)
-    gnuplot.figprint('./Results/phase2_child_err_hist_iter_pool'..(pool1*pool2)..'.eps')
+    gnuplot.figprint('./Results/phase1_child_err_hist_iter_pool'..(pool1*pool2)..'.eps')
     --gnuplot.closeall()
 
     print(output) 
 end  
 
-torch.save("./Results/phase2_child.net", net)
+torch.save("./Results/phase1_child.net", net)

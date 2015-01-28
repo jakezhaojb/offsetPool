@@ -25,6 +25,20 @@ offset_pooling = function(kW,kH,phase_const,mod_const,zero_offset_gradInput)
 
 end 
 
+
+mlp_pooling = function(kW, kH, phase_const, mod_const)
+   -- TODO you need a CUDA file...
+   local phase_const = phase_const or 1
+   local mod_const = mod_const or 1
+   local modulus = nn.ConcatTable()
+   local softmax = nn.Sequential()
+   local dxdy = nn.Sequential()
+   modulus:add(softmax)
+   modulus:add(dxdy)
+
+end
+
+
 --traditional convnet with max pooling 
 conv_net2 = function(inputSize)  
 
@@ -80,7 +94,7 @@ phase_net1 = function(inputSize,pool1,phase_const,mag_const,flag)
     local zero_offset_gradInput = true 
 
     --1st Spatial Stage
-    local nOutputPlane1 = 1  
+    local nOutputPlane1 = 16
     local k1 = 9
     local pad1 = (k1-1)/2 
     net:add(nn.SpatialPadding(pad1,pad1,pad1,pad1,3,4))
@@ -105,6 +119,8 @@ phase_net1 = function(inputSize,pool1,phase_const,mag_const,flag)
     return net 
 
 end
+
+--[[
 --convnet with max offset pooling 
 phase_net2 = function(inputSize,pool1,pool2,phase_const,mag_const,flag)  
 
@@ -113,7 +129,7 @@ phase_net2 = function(inputSize,pool1,pool2,phase_const,mag_const,flag)
     local zero_offset_gradInput = true 
 
     --1st Spatial Stage
-    local nOutputPlane1 = 4  
+    local nOutputPlane1 = 16
     local k1 = 9
     local pad1 = (k1-1)/2 
     net:add(nn.SpatialPadding(pad1,pad1,pad1,pad1,3,4))
@@ -150,4 +166,45 @@ phase_net2 = function(inputSize,pool1,pool2,phase_const,mag_const,flag)
 
     return net 
 
+end
+--]]
+
+-- single layer
+phase_net2 = function(inputSize,pool1,pool2,phase_const,mag_const,flag)  
+
+    local net = nn.Sequential()
+    local size = inputSize
+    local zero_offset_gradInput = true 
+
+    --1st Spatial Stage
+    local nOutputPlane1 = 16
+    local k1 = 9
+    local pad1 = (k1-1)/2 
+    net:add(nn.SpatialPadding(pad1,pad1,pad1,pad1,3,4))
+    net:add(nn.SpatialConvolutionFFT(inputSize[1],nOutputPlane1,k1,k1))
+    net:add(nn.Threshold(0,0))
+    pooling1 = offset_pooling(pool1,pool1,phase_const,mag_const,zero_offset_gradInput)
+    net:add(pooling1)
+    net.pooling1 = pooling1 
+    net:add(nn.Threshold(0,0))
+    size[1] = 3 * nOutputPlane1 
+    size[2] = math.floor((size[2] - pool1)/pool1 + 1) 
+    size[3] = math.floor((size[3] - pool1)/pool1 + 1) 
+    --Reshape for F.C. stages 
+    size = size[1]*size[2]*size[3]
+    net:add(nn.Reshape(size))
+    if flag == nil then
+       net:add(nn.Linear(size,2)) 
+    else
+       net:add(nn.Linear(size,4)) 
+    end
+
+    return net 
+
+end
+
+phase_net3 = function(inputSize, pool1, phase_const, flag)
+   local net = nn.Sequential()
+   local size = inputSize
+   --TODO
 end

@@ -39,6 +39,7 @@ uv[{2,{}}]:fill(h/2)
 for i = 1, num_images do
   
   local deg_rot = math.random() * 360 
+  local deg_rot = 0
   local trans_u = (math.random() - 0.5) * w
   local trans_v = (math.random() - 0.5) * h
 
@@ -68,6 +69,7 @@ uv[{2,{}}]:fill(h/2)
 for i = 1, num_images do
   
   local deg_rot = math.random() * 360 
+  local deg_rot = 0
   local trans_u = (math.random() - 0.5) * w
   local trans_v = (math.random() - 0.5) * h
 
